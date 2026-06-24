@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Plus, MapPin, User } from "lucide-react";
+import { Plus, MapPin, User, Heart, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
@@ -38,6 +38,30 @@ export function Navbar() {
             )}
           >
             Mes lots
+          </Link>
+          <Link
+            href="/asso"
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+              pathname === "/asso"
+                ? "bg-zinc-100 text-zinc-900"
+                : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
+            )}
+          >
+            <Heart size={15} />
+            Associations
+          </Link>
+          <Link
+            href="/faq"
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+              pathname === "/faq"
+                ? "bg-zinc-100 text-zinc-900"
+                : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
+            )}
+          >
+            <HelpCircle size={15} />
+            FAQ
           </Link>
         </nav>
 

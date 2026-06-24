@@ -87,6 +87,18 @@ model Rating {
   rated User @relation("rated", fields: [ratedId], references: [id])
 }
 
+model Association {
+  id           String   @id @default(uuid())
+  name         String
+  city         String
+  neighborhood String?
+  description  String?
+  needs        String?
+  contact      String?
+  website      String?
+  createdAt    DateTime @default(now())
+}
+
 enum LotStatus {
   OPEN
   FULL

@@ -1,16 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Crosshair } from "lucide-react";
+import { MapPin, Crosshair, ImagePlus, X } from "lucide-react";
+import Image from "next/image";
 
 export function NewLotForm() {
   const router = useRouter();
+  const fileRef = useRef<HTMLInputElement>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [locationMode, setLocationMode] = useState<"gps" | "manual">("manual");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [totalPrice, setTotalPrice] = useState("");
   const [totalShares, setTotalShares] = useState("");
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,10 +38,44 @@ export function NewLotForm() {
     );
   }
 
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image trop lourde (max 5 Mo)");
+      return;
+    }
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    setError(null);
+  }
+
+  function removeImage() {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
+
+    let photoUrl: string | null = null;
+
+    if (imageFile) {
+      const fd = new FormData();
+      fd.append("file", imageFile);
+      const uploadRes = await fetch("/api/upload", { method: "POST", body: fd });
+      if (!uploadRes.ok) {
+        const data = await uploadRes.json();
+        setError(data.error ?? "Erreur lors de l'upload de l'image");
+        setIsSubmitting(false);
+        return;
+      }
+      const { url } = await uploadRes.json();
+      photoUrl = url;
+    }
 
     const fd = new FormData(e.currentTarget);
     const body = {
@@ -49,6 +87,7 @@ export function NewLotForm() {
       city: fd.get("city"),
       neighborhood: fd.get("neighborhood"),
       pickupDeadline: fd.get("pickupDeadline"),
+      photo: photoUrl,
       ...(coords ?? {}),
     };
 
@@ -80,6 +119,39 @@ export function NewLotForm() {
       {/* Infos produit */}
       <section className="bg-white border border-zinc-100 rounded-2xl p-5 flex flex-col gap-4">
         <h2 className="font-semibold text-sm text-zinc-500 uppercase tracking-wide">Le lot</h2>
+
+        {/* Image */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium">Photo</label>
+          {imagePreview ? (
+            <div className="relative h-44 rounded-xl overflow-hidden bg-zinc-100">
+              <Image src={imagePreview} alt="Aperçu" fill className="object-cover" />
+              <button
+                type="button"
+                onClick={removeImage}
+                className="absolute top-2 right-2 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow hover:bg-zinc-50"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="h-28 border-2 border-dashed border-zinc-200 rounded-xl flex flex-col items-center justify-center gap-2 text-zinc-400 hover:border-amber-300 hover:text-amber-500 transition-colors"
+            >
+              <ImagePlus size={22} />
+              <span className="text-xs">Ajouter une photo (max 5 Mo)</span>
+            </button>
+          )}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="hidden"
+          />
+        </div>
 
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium">Titre *</label>
