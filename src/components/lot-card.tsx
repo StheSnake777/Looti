@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Users } from "lucide-react";
 import { formatPrice, sharesLeft } from "@/lib/utils";
-import { LotStatus } from "@prisma/client";
+import { LotStatus } from "@/generated/prisma/enums";
 
 type LotCardProps = {
   lot: {
