@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String
+  avatar    String?
+  phone     String?
+  createdAt DateTime @default(now())
+
+  lots        Lot[]
+  shares      LotShare[]
+  messages    Message[]
+  sentRatings Rating[]   @relation("rater")
+  gotRatings  Rating[]   @relation("rated")
+}
+
+model Lot {
+  id            String    @id @default(uuid())
+  title         String
+  description   String?
+  photo         String?
+  totalPrice    Float
+  totalShares   Int
+  pricePerShare Float
+  status        LotStatus @default(OPEN)
+  creatorId     String
+  lat           Float?
+  lng           Float?
+  city          String?
+  neighborhood  String?
+  meetingPoint  String
+  pickupDeadline DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  creator  User       @relation(fields: [creatorId], references: [id])
+  shares   LotShare[]
+  messages Message[]
+}
+
+model LotShare {
+  id                    String        @id @default(uuid())
+  lotId                 String
+  userId                String
+  nbShares              Int
+  paymentMethod         PaymentMethod @default(CASH)
+  paymentStatus         PaymentStatus @default(PENDING)
+  stripePaymentIntentId String?
+  createdAt             DateTime      @default(now())
+
+  lot  Lot  @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([lotId, userId])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  lotId     String
+  senderId  String
+  content   String
+  createdAt DateTime @default(now())
+
+  lot    Lot  @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  sender User @relation(fields: [senderId], references: [id])
+}
+
+model Rating {
+  id        String   @id @default(uuid())
+  raterId   String
+  ratedId   String
+  score     Int
+  comment   String?
+  lotId     String
+  createdAt DateTime @default(now())
+
+  rater User @relation("rater", fields: [raterId], references: [id])
+  rated User @relation("rated", fields: [ratedId], references: [id])
+}
+
+enum LotStatus {
+  OPEN
+  FULL
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  STRIPE
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+}
