@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { prisma } from "@/lib/prisma";
 import { MapPin, Phone, Globe, Heart } from "lucide-react";
 import { AssoForm } from "@/components/asso-form";

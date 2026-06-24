@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Plus, MapPin, User, Heart, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "@/components/notification-bell";
 
 export function Navbar() {
   const pathname = usePathname();
+  const { status } = useSession();
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-zinc-100">
@@ -73,6 +76,7 @@ export function Navbar() {
             <Plus size={15} />
             Poster
           </Link>
+          <NotificationBell isAuthenticated={status === "authenticated"} />
           <Link
             href="/profil"
             className="w-9 h-9 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center transition-colors"

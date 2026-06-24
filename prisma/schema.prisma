@@ -16,11 +16,12 @@ model User {
   phone     String?
   createdAt DateTime @default(now())
 
-  lots        Lot[]
-  shares      LotShare[]
-  messages    Message[]
-  sentRatings Rating[]   @relation("rater")
-  gotRatings  Rating[]   @relation("rated")
+  lots          Lot[]
+  shares        LotShare[]
+  messages      Message[]
+  notifications Notification[]
+  sentRatings   Rating[]   @relation("rater")
+  gotRatings    Rating[]   @relation("rated")
 }
 
 model Lot {
@@ -85,6 +86,24 @@ model Rating {
 
   rater User @relation("rater", fields: [raterId], references: [id])
   rated User @relation("rated", fields: [ratedId], references: [id])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  lotId     String?
+  content   String
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum NotificationType {
+  LOT_JOINED
+  LOT_FULL
+  NEW_MESSAGE
 }
 
 model Association {
